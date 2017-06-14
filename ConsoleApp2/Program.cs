@@ -45,7 +45,6 @@ namespace TestingApplicationForEngine
         public static void RegisterEvent(Action function)
         {
             PrintTestInfo(function.GetMethodInfo());
-            function();
         }
 
         struct StoreType
@@ -69,8 +68,14 @@ namespace TestingApplicationForEngine
 
         private static void PrintTestInfo(MemberInfo t, Type type = null)
         {
-            Console.WriteLine("Registration information for {0}", t);
-
+            if(t is MethodInfo mi)
+            {
+                Console.WriteLine("Registration information for {0}.{1}", mi.DeclaringType, mi.Name);
+            }
+            else if(t is TypeInfo ti)
+            {
+                Console.WriteLine("Registration information for {0}", ti);
+            }
             var attrs = t.GetCustomAttributes();
 
             foreach (Attribute attr in attrs)
