@@ -46,11 +46,12 @@ namespace TestingApplicationForEngine
     {
         public static void RegisterEvent(Action function)
         {
-            PrintTestInfo(function.Method);
+            PrintTestInfo(function.GetMethodInfo());
             function();
         }
 
-        struct StoreType{
+        struct StoreType
+        {
             public Type type;
             public string str;
 
@@ -65,29 +66,29 @@ namespace TestingApplicationForEngine
 
         public static void RegisterEvent(Type type)
         {
-            PrintTestInfo(type, type);
+            PrintTestInfo(type.GetTypeInfo(), type);
         }
 
         private static void PrintTestInfo(MemberInfo t, Type type = null)
         {
             Console.WriteLine("Registration information for {0}", t);
 
-            Attribute[] attrs = Attribute.GetCustomAttributes(t);
+            var attrs = t.GetCustomAttributes();
 
             foreach (Attribute attr in attrs)
             {
-                if(attr is HookAttribute e)
+                if (attr is HookAttribute e)
                 {
                     attributes.Add(new StoreType(type, e.name));
                     Console.WriteLine("   Registered {0} attribute", e.name);
                 }
                 else
                 {
-                    foreach(StoreType storedType in attributes)
+                    foreach (StoreType storedType in attributes)
                     {
-                        if(attr.GetType() == storedType.type)
+                        if (attr.GetType() == storedType.type)
                         {
-                            if(attr is BaseAttr f)
+                            if (attr is BaseAttr f)
                             {
                                 Console.WriteLine("  Registerd {0} as {1}", storedType.str, f.name);
                             }
