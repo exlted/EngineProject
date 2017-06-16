@@ -2,41 +2,69 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace TestingApplicationForEngine
+namespace TestCode
 {
-    class BaseAttr : Attribute
+    internal abstract class BaseAttr : Attribute
     {
-        public string name;
+        public readonly string Name;
 
-        public BaseAttr(string name)
+        protected BaseAttr(string name)
         {
-            this.name = name;
+            Name = name;
         }
+
+        public abstract void Register(MemberInfo i, Attribute j);
     }
 
-    [HookAttribute("event")]
+    [Hook("event")]
     [AttributeUsage(AttributeTargets.Method)]
-    class CreateEvent : BaseAttr
+    internal class CreateEvent : BaseAttr
     {
         public CreateEvent(string name) : base(name)
         {
         }
+
+        public override void Register(MemberInfo i, Attribute j)
+        {
+            var attr = j as CreateEvent;
+            if (attr != null) Console.WriteLine("  Registerd event as {0}", attr.Name);
+            var functionInfo = i as MethodInfo;
+            if (functionInfo != null)
+            {
+                var function = functionInfo.CreateDelegate(typeof(EventManager.VoidString));
+                if (function is EventManager.VoidString vs)
+                {
+                    if (attr != null) EventManager.SubscribeToEvent(attr.Name, vs);
+                }
+            }
+        }
     }
 
-    [HookAttribute("message")]
+    [Hook("message")]
     [AttributeUsage(AttributeTargets.Method)]
-    class CreateMessage : BaseAttr
+    internal class CreateMessage : BaseAttr
     {
         public CreateMessage(string name) : base(name)
         {
         }
+
+        public override void Register(MemberInfo i, Attribute j)
+        {
+            var attr = j as CreateMessage;
+            if (attr != null) Console.WriteLine("  Registerd message as {0}", attr.Name);
+        }
     }
 
     [AttributeUsage(AttributeTargets.Class)]
-    class HookAttribute : BaseAttr
+    internal class HookAttribute : BaseAttr
     {
         public HookAttribute(string name) : base(name)
         {
+        }
+
+        public override void Register(MemberInfo i, Attribute j)
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -47,26 +75,36 @@ namespace TestingApplicationForEngine
             PrintTestInfo(function.GetMethodInfo());
         }
 
+        public static void RegisterEvent<T>(Action<T> function)
+        {
+            PrintTestInfo(function.GetMethodInfo());
+        }
+
+        public static void RegisterEvent<T, TR>(Func<T, TR> function)
+        {
+            PrintTestInfo(function.GetMethodInfo());
+        }
+
         struct StoreType
         {
-            public Type type;
-            public string str;
+            public readonly Type Type;
+            public readonly string Str;
 
             public StoreType(Type t, string s)
             {
-                type = t;
-                str = s;
+                Type = t;
+                Str = s;
             }
         }
 
-        private static List<StoreType> attributes = new List<StoreType>();
+        private static readonly List<StoreType> Attributes = new List<StoreType>();
 
         public static void RegisterEvent(Type type)
         {
-            PrintTestInfo(type.GetTypeInfo(), type);
+            PrintTestInfo(type.GetTypeInfo());
         }
 
-        private static void PrintTestInfo(MemberInfo t, Type type = null)
+        private static void PrintTestInfo(MemberInfo t)
         {
             if(t is MethodInfo mi)
             {
@@ -78,27 +116,26 @@ namespace TestingApplicationForEngine
             }
             var attrs = t.GetCustomAttributes();
 
-            foreach (Attribute attr in attrs)
+            foreach (var attr in attrs)
             {
                 if (attr is HookAttribute e)
                 {
-                    attributes.Add(new StoreType(type, e.name));
-                    Console.WriteLine("   Registered {0} attribute", e.name);
+                    var x = t as TypeInfo;
+                    if (x != null) Attributes.Add(new StoreType(x.AsType(), e.Name));
+                    Console.WriteLine("   Registered {0} attribute", e.Name);
                 }
                 else
                 {
-                    foreach (StoreType storedType in attributes)
+                    foreach (var storedType in Attributes)
                     {
-                        if (attr.GetType() == storedType.type)
+                        if (attr.GetType() != storedType.Type) continue;
+                        if (attr is BaseAttr f)
                         {
-                            if (attr is BaseAttr f)
-                            {
-                                Console.WriteLine("  Registerd {0} as {1}", storedType.str, f.name);
-                            }
-                            else
-                            {
-                                Console.WriteLine("  Registerd {0}", storedType.str);
-                            }
+                            f.Register(t, f);
+                        }
+                        else
+                        {
+                            Console.WriteLine("  Registerd {0}", storedType.Str);
                         }
                     }
                 }
@@ -108,32 +145,35 @@ namespace TestingApplicationForEngine
 
     class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             SetupEvents.RegisterEvent(typeof(CreateEvent));
             SetupEvents.RegisterEvent(typeof(CreateMessage));
-            SetupEvents.RegisterEvent(boop);
-            SetupEvents.RegisterEvent(Beep.boop);
+            SetupEvents.RegisterEvent<string[]>(Boop);
+            SetupEvents.RegisterEvent<string[]>(Beep.Boop);
+            Console.WriteLine("Running event Boop");
+            string[] boop = {"Hi", "Hello"};
+            EventManager.NotifyEvent("Boop", boop);
             Console.WriteLine("Press any key to close");
             Console.ReadKey();
         }
 
         [CreateMessage("Bang")]
         [CreateEvent("Boop")]
-        public static void boop()
+        public static void Boop(string[] blah)
         {
             //Do Stuff
-            Console.WriteLine("Registered Program.boop()");
+            Console.WriteLine("    Registered Program.Boop()");
         }
     }
 
     class Beep
     {
         [CreateEvent("Boop")]
-        public static void boop()
+        public static void Boop(string[] blah)
         {
             //Do Stuff
-            Console.WriteLine("Registered Beep.boop()");
+            Console.WriteLine("    Registered Beep.Boop()");
         }
     }
 }
