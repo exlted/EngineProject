@@ -40,7 +40,7 @@ namespace TestCode
             Console.WriteLine("Starting Main Loop, press any key to break");
             while (!Console.KeyAvailable)
             {
-                DateTime currTime = DateTime.Now;
+                DateTime currTime = DateTime.UtcNow;
                 Console.WriteLine("Registering message 'Bang'");
                 MessageSystem.PushMessage("Bang");
                 Console.WriteLine("Registering message 'Bang'");
@@ -50,7 +50,7 @@ namespace TestCode
                 Input?.Invoke(bibbly);
                 Physics?.Invoke(bibbly);
                 Render?.Invoke(bibbly);
-                while (DateTime.Now < currTime.AddMilliseconds(msWait))
+                while (DateTime.UtcNow < currTime.AddMilliseconds(msWait))
                 {
                     if (Console.KeyAvailable)
                     {

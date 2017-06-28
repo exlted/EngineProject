@@ -73,7 +73,7 @@ internal class RegisterRender : BaseAttr
     public override void Register(MemberInfo i, Attribute j)
     {
         var attr = j as RegisterRender;
-        if (attr != null) Console.WriteLine("  Registerd message as {0}", attr.Name);
+        if (attr != null) Console.WriteLine("  Registerd Render Function as {0}", attr.Name);
         var functionInfo = i as MethodInfo;
         if (functionInfo != null)
         {
@@ -104,7 +104,7 @@ internal class RegisterInput : BaseAttr
     public override void Register(MemberInfo i, Attribute j)
     {
         var attr = j as RegisterInput;
-        if (attr != null) Console.WriteLine("  Registerd message as {0}", attr.Name);
+        if (attr != null) Console.WriteLine("  Registerd Input Function as {0}", attr.Name);
         var functionInfo = i as MethodInfo;
         if (functionInfo != null)
         {
@@ -138,7 +138,7 @@ internal class RegisterPhysics : BaseAttr
     public override void Register(MemberInfo i, Attribute j)
     {
         var attr = j as RegisterPhysics;
-        if (attr != null) Console.WriteLine("  Registerd message as {0}", attr.Name);
+        if (attr != null) Console.WriteLine("  Registerd Physics Function as {0}", attr.Name);
         var functionInfo = i as MethodInfo;
         if (functionInfo != null)
         {
