@@ -1,109 +1,63 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
 
 namespace TestCode
 {
-    class SetupEvents
-    {
-        public static void RegisterEvent(Action function)
-        {
-            PrintTestInfo(function.GetMethodInfo());
-        }
-
-        public static void RegisterEvent<T>(Action<T> function)
-        {
-            PrintTestInfo(function.GetMethodInfo());
-        }
-
-        public static void RegisterEvent<T, TR>(Func<T, TR> function)
-        {
-            PrintTestInfo(function.GetMethodInfo());
-        }
-
-        struct StoreType
-        {
-            public readonly Type Type;
-            public readonly string Str;
-
-            public StoreType(Type t, string s)
-            {
-                Type = t;
-                Str = s;
-            }
-        }
-
-        private static readonly List<StoreType> Attributes = new List<StoreType>();
-
-        public static void RegisterEvent(Type type)
-        {
-            PrintTestInfo(type.GetTypeInfo());
-        }
-
-        private static void PrintTestInfo(MemberInfo t)
-        {
-            if(t is MethodInfo mi)
-            {
-                Console.WriteLine("Registration information for {0}.{1}", mi.DeclaringType, mi.Name);
-            }
-            else if(t is TypeInfo ti)
-            {
-                Console.WriteLine("Registration information for {0}", ti);
-            }
-            var attrs = t.GetCustomAttributes();
-
-            foreach (var attr in attrs)
-            {
-                if (attr is HookAttribute e)
-                {
-                    var x = t as TypeInfo;
-                    if (x != null) Attributes.Add(new StoreType(x.AsType(), e.Name));
-                    Console.WriteLine("   Registered {0} attribute", e.Name);
-                }
-                else
-                {
-                    foreach (var storedType in Attributes)
-                    {
-                        if (attr.GetType() != storedType.Type) continue;
-                        if (attr is BaseAttr f)
-                        {
-                            f.Register(t, f);
-                        }
-                        else
-                        {
-                            Console.WriteLine("  Registerd {0}", storedType.Str);
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     class Program
     {
+        private const double msWait = 1000;
+
+        public static MessageSystem.VoidState Input;
+        public static MessageSystem.VoidState Physics;
+        public static MessageSystem.VoidState Render;
         private static void Main(string[] args)
         {
             SetupEvents.RegisterEvent(typeof(CreateEvent));
             SetupEvents.RegisterEvent(typeof(CreateMessage));
+            SetupEvents.RegisterEvent(typeof(RegisterRender));
+            SetupEvents.RegisterEvent(typeof(RegisterInput));
+            SetupEvents.RegisterEvent(typeof(RegisterPhysics));
             SetupEvents.RegisterEvent<string[]>(Boop);
             SetupEvents.RegisterEvent<GameState>(Boop);
+            SetupEvents.RegisterEvent<GameState>(RenderFunc);
+            SetupEvents.RegisterEvent<GameState>(PhysicsFunc);
+            SetupEvents.RegisterEvent<GameState>(InputFunc);
             SetupEvents.RegisterEvent<string[]>(Beep.Boop);
             Console.WriteLine("Running event Boop");
             string[] boop = {"Hi", "Hello"};
             EventManager.NotifyEvent("Boop", boop);
             Console.WriteLine("Registering message 'Bang'");
-            MessageSystem.pushMessage("Bang");
+            MessageSystem.PushMessage("Bang");
             Console.WriteLine("Registering message 'Bang'");
-            MessageSystem.pushMessage("Bang");
+            MessageSystem.PushMessage("Bang");
             Console.WriteLine("Registering message 'Bang'");
-            MessageSystem.pushMessage("Bang");
+            MessageSystem.PushMessage("Bang");
             Console.WriteLine("Running message 'Bang' handling 2 messages");
             GameState bibbly = new GameState();
             MessageSystem.HandleMessages(bibbly, 2);
             Console.WriteLine("Running message 'Bang' handling 2 messages");
             MessageSystem.HandleMessages(bibbly, 2);
-            Console.WriteLine("Press any key to close");
-            Console.ReadKey();
+            Console.WriteLine("Starting Main Loop, press any key to break");
+            while (!Console.KeyAvailable)
+            {
+                DateTime currTime = DateTime.Now;
+                Console.WriteLine("Registering message 'Bang'");
+                MessageSystem.PushMessage("Bang");
+                Console.WriteLine("Registering message 'Bang'");
+                MessageSystem.PushMessage("Bang");
+                Console.WriteLine("Running message 'Bang' handling 2 messages");
+                MessageSystem.HandleMessages(bibbly, 2);
+                Input?.Invoke(bibbly);
+                Physics?.Invoke(bibbly);
+                Render?.Invoke(bibbly);
+                while (DateTime.Now < currTime.AddMilliseconds(msWait))
+                {
+                    if (Console.KeyAvailable)
+                    {
+                        return;
+                    }
+                }
+            }
         }
 
         [CreateEvent("Boop")]
@@ -117,6 +71,24 @@ namespace TestCode
         public static void Boop(GameState state)
         {
             Console.WriteLine("    Registered Program.Boop() as Message");
+        }
+
+        [RegisterRender("Render")]
+        public static void RenderFunc(GameState state)
+        {
+            Console.WriteLine("    Registered Program.RenderFunc() as Render Function");
+        }
+
+        [RegisterInput("Input")]
+        public static void InputFunc(GameState state)
+        {
+            Console.WriteLine("    Registered Program.InputFunc() as Input Function");
+        }
+
+        [RegisterPhysics("Physics")]
+        public static void PhysicsFunc(GameState state)
+        {
+            Console.WriteLine("    Registered Program.PhysicsFunc() as Physics Function");
         }
     }
 

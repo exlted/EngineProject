@@ -16,7 +16,7 @@ static class MessageSystem
 
     private static Dictionary<string, VoidState> registeredMessages = new Dictionary<string, VoidState>();
 
-    public static void registerMessage(string message, VoidState func)
+    public static void RegisterMessage(string message, VoidState func)
     {
         if (registeredMessages.ContainsKey(message))
         {
@@ -28,7 +28,7 @@ static class MessageSystem
         }
     }
 
-    public static void pushMessage(string message)
+    public static void PushMessage(string message)
     {
         messagesToHandle.Enqueue(message);
     }
