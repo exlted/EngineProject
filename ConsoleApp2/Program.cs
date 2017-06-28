@@ -86,20 +86,37 @@ namespace TestCode
             SetupEvents.RegisterEvent(typeof(CreateEvent));
             SetupEvents.RegisterEvent(typeof(CreateMessage));
             SetupEvents.RegisterEvent<string[]>(Boop);
+            SetupEvents.RegisterEvent<GameState>(Boop);
             SetupEvents.RegisterEvent<string[]>(Beep.Boop);
             Console.WriteLine("Running event Boop");
             string[] boop = {"Hi", "Hello"};
             EventManager.NotifyEvent("Boop", boop);
+            Console.WriteLine("Registering message 'Bang'");
+            MessageSystem.pushMessage("Bang");
+            Console.WriteLine("Registering message 'Bang'");
+            MessageSystem.pushMessage("Bang");
+            Console.WriteLine("Registering message 'Bang'");
+            MessageSystem.pushMessage("Bang");
+            Console.WriteLine("Running message 'Bang' handling 2 messages");
+            GameState bibbly = new GameState();
+            MessageSystem.HandleMessages(bibbly, 2);
+            Console.WriteLine("Running message 'Bang' handling 2 messages");
+            MessageSystem.HandleMessages(bibbly, 2);
             Console.WriteLine("Press any key to close");
             Console.ReadKey();
         }
 
-        [CreateMessage("Bang")]
         [CreateEvent("Boop")]
         public static void Boop(string[] blah)
         {
             //Do Stuff
-            Console.WriteLine("    Registered Program.Boop()");
+            Console.WriteLine("    Registered Program.Boop() as Event");
+        }
+
+        [CreateMessage("Bang")]
+        public static void Boop(GameState state)
+        {
+            Console.WriteLine("    Registered Program.Boop() as Message");
         }
     }
 
@@ -109,7 +126,7 @@ namespace TestCode
         public static void Boop(string[] blah)
         {
             //Do Stuff
-            Console.WriteLine("    Registered Beep.Boop()");
+            Console.WriteLine("    Registered Beep.Boop() as Event");
         }
     }
 }

@@ -50,6 +50,15 @@ internal class CreateMessage : BaseAttr
     {
         var attr = j as CreateMessage;
         if (attr != null) Console.WriteLine("  Registerd message as {0}", attr.Name);
+        var functionInfo = i as MethodInfo;
+        if (functionInfo != null)
+        {
+            var function = functionInfo.CreateDelegate(typeof(MessageSystem.VoidState));
+            if (function is MessageSystem.VoidState vs)
+            {
+                if(attr != null) MessageSystem.registerMessage(attr.Name, vs);
+            }
+        }
     }
 }
 
