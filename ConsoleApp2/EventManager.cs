@@ -1,96 +1,4 @@
-﻿/* ------------------------------------------------------------------
- * THIS CODE IS LICENSED TO PHYSLIGHT DEVELOPMENTS BY BENJAMIN J KING
- * ------------------------------------------------------------------
- * 
- * Full ownership of this code is retained by Benjamin J King and no rights
- * beyond usage within Physlight Game Project 1 (The Paradox Project) is
- * inherantly provided.
-*/
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-public delegate void VoidObject(object[] objects);
-public struct Command
-{
-	public string command;
-	public string help;
-	public string syntax;
-	public VoidObject function;
-}
-
-
-static class ConsoleManager
-{
-	private static Dictionary<string, Command> Commands = new Dictionary<String, Command>();
-
-	public static void RegisterCommand(Command newComm)
-	{
-		Commands.Add(newComm.command, newComm);
-	}
-
-	public static void UpdateCommand(Command updatedComm)
-	{
-		Commands[updatedComm.command] = updatedComm;
-	}
-}
-
-[AttributeUsage(AttributeTargets.Method)]
-public class ConsoleCommand : Attribute
-{
-
-	private string command;
-	private string help;
-	private string syntax;
-	private VoidObject function;
-
-	public ConsoleCommand(string comm, string hel, string synt, VoidObject func)
-	{
-		command = comm;
-		help = hel;
-		syntax = synt;
-		function = func;
-
-		Command temp;
-		temp.command = comm;
-		temp.help = hel;
-		temp.syntax = synt;
-		temp.function = func;
-		ConsoleManager.RegisterCommand(temp);
-	}
-
-	public virtual string Command
-	{
-		get { return command; }
-	}
-
-	public virtual string Help
-	{
-		get { return help; }
-	}
-
-	public virtual string Syntax
-	{
-		get { return syntax; }
-	}
-
-	public virtual VoidObject Function
-	{
-		get { return function; }
-		set
-		{
-			function = value;
-			Command temp;
-			temp.command = command;
-			temp.help = help;
-			temp.syntax = syntax;
-			temp.function = function;
-			ConsoleManager.UpdateCommand(temp);
-		}
-	}
-}
-
+﻿using System.Collections.Generic;
 
 static class EventManager
 {
@@ -119,8 +27,7 @@ static class EventManager
 				StringEvents.Add(eventName, functionsToRun);
 			}
 		}
-		else
-        if (StringEvents.ContainsKey(eventName))
+		else if (StringEvents.ContainsKey(eventName))
         {
             StringEvents[eventName] += functionsToRun;
         }
