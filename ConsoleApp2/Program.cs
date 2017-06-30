@@ -38,7 +38,7 @@ namespace TestCode
             Console.WriteLine("Running message 'Bang' handling 2 messages");
             MessageSystem.HandleMessages(bibbly, 2);
             Console.WriteLine("Starting Main Loop, press any key to break");
-            while (!Console.KeyAvailable)
+            do
             {
                 DateTime currTime = DateTime.UtcNow;
                 Console.WriteLine("Registering message 'Bang'");
@@ -57,7 +57,7 @@ namespace TestCode
                         return;
                     }
                 }
-            }
+            } while (!Console.KeyAvailable);
         }
 
         [CreateEvent("Boop")]
